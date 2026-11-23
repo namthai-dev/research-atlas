@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ paper.title }} — Research Atlas</title>
+  <style>
+    :root { color-scheme: light dark; font-family: system-ui, sans-serif; background: #f4f3ee; color: #202a2a; }
+    body { max-width: 820px; margin: 0 auto; padding: 2rem 1rem 4rem; background: #f4f3ee; }
+    a { color: #176b5b; }
+    .eyebrow, .muted { color: #526361; }
+    .eyebrow { font-size: .78rem; letter-spacing: .12em; font-weight: 700; }
+    h1 { font-size: clamp(1.8rem, 5vw, 3.2rem); line-height: 1.08; letter-spacing: -.04em; }
+    section { border-top: 1px solid #c9d1ca; padding: 1.2rem 0; }
+    dt { font-weight: 700; margin-top: .7rem; }
+    dd { margin: .2rem 0; overflow-wrap: anywhere; }
+    @media (prefers-color-scheme: dark) { :root { background: #17211f; color: #edf1eb; } body { background: #17211f; } a { color: #8dd7bd; } .eyebrow, .muted { color: #bdc9c1; } section { border-color: #52635d; } }
+  </style>
+</head>
+<body>
+  <p><a href="/">← Back to saved library</a></p>
+  <p class="eyebrow">ARXIV SOURCE RECORD · {{ paper.arxiv_id }}</p>
+  <h1>{{ paper.title }}</h1>
+  <p>{{ paper.authors | join(", ") }}</p>
+  <p class="muted">{{ paper.categories | join(", ") }}</p>
+  <section>
+    <h2>Abstract</h2>
+    <p>{{ paper.abstract }}</p>
+  </section>
+  <section>
+    <h2>Bibliographic details</h2>
+    <dl>
+      <dt>Published</dt><dd>{{ paper.published }}</dd>
+      <dt>Updated</dt><dd>{{ paper.updated }}</dd>
+      <dt>DOI</dt><dd>{% if paper.doi %}<a href="https://doi.org/{{ paper.doi }}">{{ paper.doi }}</a>{% else %}<span class="muted">DOI not provided by arXiv</span>{% endif %}</dd>
+      <dt>Source URL</dt><dd><a href="{{ paper.source_url }}">{{ paper.source_url }}</a></dd>
+    </dl>
+  </section>
+  <section>
+    <h2>Collection and provenance</h2>
+    <dl>
+      <dt>Collected at</dt><dd>{{ paper.collected_at }}</dd>
+      <dt>Archived Atom response</dt>
+      <dd>{% if archive_exists %}{{ paper.archive_path }}{% else %}<span class="muted">Archive file is missing: {{ paper.archive_path }}</span>{% endif %}</dd>
+    </dl>
+    <p class="muted">The archived Atom response is preserved separately from this structured catalog record. No generated summary or analysis is included.</p>
+  </section>
+</body>
+</html>

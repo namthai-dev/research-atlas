@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Research Atlas — Saved library</title>
+  <style>
+    :root { color-scheme: light dark; font-family: system-ui, sans-serif; background: #f4f3ee; color: #202a2a; }
+    body { max-width: 900px; margin: 0 auto; padding: 2rem 1rem 4rem; background: #f4f3ee; }
+    header { border-bottom: 1px solid #c9d1ca; margin-bottom: 2rem; }
+    h1 { letter-spacing: -0.04em; margin-bottom: .25rem; }
+    .muted { color: #526361; }
+    form { display: flex; flex-wrap: wrap; gap: .6rem; margin: 1rem 0; }
+    input { flex: 1 1 16rem; padding: .75rem; border: 1px solid #9aa9a3; border-radius: .5rem; background: #fff; color: #202a2a; }
+    button { padding: .75rem 1rem; border: 0; border-radius: .5rem; background: #176b5b; color: #fff; font-weight: 650; cursor: pointer; }
+    article { border-top: 1px solid #c9d1ca; padding: 1.1rem 0; }
+    article h2 { font-size: 1.15rem; margin: 0 0 .4rem; }
+    a { color: #176b5b; }
+    #message { min-height: 1.5em; }
+    @media (prefers-color-scheme: dark) { :root { background: #17211f; color: #edf1eb; } body { background: #17211f; } input { background: #202d2a; color: #edf1eb; } .muted { color: #bdc9c1; } article, header { border-color: #52635d; } a { color: #8dd7bd; } }
+  </style>
+</head>
+<body>
+  <header>
+    <p class="muted">LOCAL RESEARCH LIBRARY</p>
+    <h1>Research Atlas</h1>
+    <p class="muted">Collect source records, keep provenance, and find them again.</p>
+  </header>
+  <main>
+    <section aria-labelledby="import-heading">
+      <h2 id="import-heading">Add an arXiv paper</h2>
+      <form id="import-form">
+        <label for="source">arXiv ID or abstract URL</label>
+        <input id="source" name="source" required placeholder="2301.12345 or https://arxiv.org/abs/…">
+        <button type="submit">Save source</button>
+      </form>
+      <p id="message" role="status" aria-live="polite"></p>
+    </section>
+    <section aria-labelledby="library-heading">
+      <h2 id="library-heading">Your saved library</h2>
+      <p class="muted">Searches your saved library only, not all of arXiv.</p>
+      <form method="get" action="/">
+        <label for="q">Search saved papers</label>
+        <input id="q" name="q" value="{{ query }}" placeholder="Title, abstract, author, or ID">
+        <button type="submit">Search</button>
+      </form>
+      {% if papers %}
+        {% for paper in papers %}
+        <article>
+          <h2><a href="/papers/{{ paper.arxiv_id }}">{{ paper.title }}</a></h2>
+          <p>{{ paper.authors | join(", ") }}</p>
+          <p class="muted">{{ paper.published }} · {{ paper.categories | join(", ") }} · arXiv:{{ paper.arxiv_id }}</p>
+        </article>
+        {% endfor %}
+      {% else %}
+        <p class="muted">No saved papers match this search yet.</p>
+      {% endif %}
+    </section>
+  </main>
+  <script>
+    const form = document.querySelector('#import-form');
+    const message = document.querySelector('#message');
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      message.textContent = 'Fetching source record…';
+      try {
+        const response = await fetch('/api/papers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ source: form.elements.source.value })
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.detail || 'Unable to save paper.');
+        message.textContent = `Saved “${result.title}”.`;
+        window.location.href = `/papers/${encodeURIComponent(result.arxiv_id)}`;
+      } catch (error) {
+        message.textContent = error.message;
+      }
+    });
+  </script>
+</body>
+</html>
